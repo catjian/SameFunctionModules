@@ -7,9 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "GPUImage.framework/Headers/GPUImage.h"
 #import <AVFoundation/AVCaptureDevice.h>
 #import <AVFoundation/AVCaptureSession.h>
+
+#import "GPUImage.h"
 
 typedef NS_ENUM(NSUInteger, ENUM_SESSION_PRESET) {
     ENUM_SESSION_PRESET_3GP,
@@ -26,10 +27,21 @@ typedef NS_ENUM(NSInteger, ENUM_CAMERA_POSITION) {
     ENUM_CAMERA_POSITION_Front = AVCaptureDevicePositionFront,
 };
 
+typedef void(^GPUImageModuleSaveVideoRespose)(BOOL isSuccess, NSError *error);
+
 @interface GPUImageModuleView : GPUImageView
 
 - (instancetype) initWithFrame:(CGRect)frame
                  sessionPreset:(ENUM_SESSION_PRESET)sessionPreset
                 cameraPosition:(ENUM_CAMERA_POSITION)cameraPosition;
 
+- (void)setImageInputFilter:(GPUImageOutput<GPUImageInput> *)filter;
+
+- (void)startAction;
+
+- (void)stopAction;
+
+- (void)saveVideoToLocationWithBlock:(GPUImageModuleSaveVideoRespose)block;
+
+- (NSArray <GPUImageOutput<GPUImageInput> *>*)getFilterArray;
 @end
