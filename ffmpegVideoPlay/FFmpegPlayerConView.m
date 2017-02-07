@@ -9,7 +9,7 @@
 #import "FFmpegPlayerConView.h"
 #import <MediaPlayer/MediaPlayer.h>
 
-#define DIF_ValueGap 0.05
+#define DIF_ValueGap (0.01*3)
 @interface  FFmpegPlayerConView()
 
 @property (nonatomic, strong) UISlider *volumeViewSlider;
@@ -33,6 +33,7 @@ typedef NS_ENUM(NSUInteger, ENUM_Pan_Move_Direction) {
     UIProgressView *m_ProgressView;
     UIButton *m_PlayButton;
     CGPoint m_touchBegin;
+    CGPoint m_OldTranslation;
     CGFloat m_CurrentLight;
     CGFloat m_CurrentVolume;
     CGFloat m_ProgressValue;
@@ -279,11 +280,14 @@ typedef NS_ENUM(NSUInteger, ENUM_Pan_Move_Direction) {
 
 - (ENUM_Pan_Move_Direction)getPanGestureRecogizerDirection:(UIPanGestureRecognizer *)gesture
 {
-    CGFloat const gestureMinimumTranslation = 50.f ;
+    ENUM_Pan_Move_Direction panMove = ENUM_Pan_Move_Direction_None;
+    CGFloat const gestureMinimumTranslation = 20.f ;
     if (gesture.state == UIGestureRecognizerStateChanged)
     {
         CGPoint translation = [gesture translationInView:self];
-        if (fabs(translation.x) > gestureMinimumTranslation)
+        NSLog(@"\n\n%@    %@\n\n",[NSValue valueWithCGPoint:translation],[NSValue valueWithCGPoint:m_OldTranslation]);
+        NSLog(@"\n\n%f    %f\n\n",(fabs(translation.x) - fabs(m_OldTranslation.x)),((translation.y) - (m_OldTranslation.y)));
+        if (fabs(fabs(translation.x) - fabs(m_OldTranslation.x)) > gestureMinimumTranslation)
         {
             BOOL gestureHorizontal = NO;
             if (translation.y == 0.0 )
@@ -294,16 +298,17 @@ typedef NS_ENUM(NSUInteger, ENUM_Pan_Move_Direction) {
             if (gestureHorizontal)
             {
                 if (translation.x > 0.0 )
-                    return ENUM_Pan_Move_Direction_Right;
+                    panMove = ENUM_Pan_Move_Direction_Right;
                 else
-                    return ENUM_Pan_Move_Direction_Left;
+                    panMove = ENUM_Pan_Move_Direction_Left;
             }
             else
             {
-                return ENUM_Pan_Move_Direction_None;
+                panMove = ENUM_Pan_Move_Direction_None;
             }
+            m_OldTranslation = translation;
         }
-        else if (fabs(translation.y) > gestureMinimumTranslation)
+        else if (fabs(fabs(translation.y) - fabs(m_OldTranslation.y)) > gestureMinimumTranslation)
         {
             BOOL gestureVertical = NO;
             if (translation.x == 0.0 )
@@ -313,18 +318,19 @@ typedef NS_ENUM(NSUInteger, ENUM_Pan_Move_Direction) {
             
             if (gestureVertical)
             {
-                if (translation.y > 0.0 )
-                    return ENUM_Pan_Move_Direction_Down;
+                if (translation.y > m_OldTranslation.y)
+                    panMove = ENUM_Pan_Move_Direction_Down;
                 else
-                    return ENUM_Pan_Move_Direction_Up;
+                    panMove = ENUM_Pan_Move_Direction_Up;
             }
             else
             {
-                return ENUM_Pan_Move_Direction_None;
+                panMove = ENUM_Pan_Move_Direction_None;
             }
+            m_OldTranslation = translation;
         }
     }
-    return ENUM_Pan_Move_Direction_None;
+    return panMove;
 }
 
 - (void)setGestureRecognizerUpDownValue:(BOOL)isUp
@@ -364,11 +370,11 @@ typedef NS_ENUM(NSUInteger, ENUM_Pan_Move_Direction) {
     }
     if (isLeft)
     {
-        m_PlayedSec > 0 ?(m_PlayedSec -= DIF_ValueGap) : (m_PlayedSec = 0);
+        m_PlayedSec > 0 ?(m_PlayedSec -= DIF_ValueGap*10) : (m_PlayedSec = 0);
     }
     else
     {
-        m_PlayedSec < m_Duration-0.5 ?(m_PlayedSec += DIF_ValueGap) : (m_PlayedSec = m_Duration-0.5);
+        m_PlayedSec < m_Duration-0.5 ?(m_PlayedSec += DIF_ValueGap*10) : (m_PlayedSec = m_Duration-0.5);
     }
     [self setViewProgressValue:m_PlayedSec/m_Duration];
     [self setplayedSeconds:m_PlayedSec];

@@ -838,8 +838,7 @@ exit:
     }
     else if (_backingWidth < size.width && _backingHeight < size.height)
     {
-        scale = (_backingWidth/size.width) <= (_backingHeight/size.height)?
-        _backingWidth/size.width:_backingHeight/size.height;
+        scale = 1;
     }
     else if (_backingWidth >= size.width && _backingHeight <= size.height)
     {
