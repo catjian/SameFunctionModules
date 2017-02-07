@@ -47,8 +47,21 @@ extern "C" {
     float m_AudioTimeBase;
     
     NSString *m_FilePath;
+    
+    BOOL m_IsNetWork;
 }
 @dynamic position;
+
+static BOOL isNetworkPath (NSString *path)
+{
+    NSRange r = [path rangeOfString:@"://"];
+    if (r.location == NSNotFound)
+        return NO;
+    NSString *scheme = [path substringToIndex:r.length];
+    if ([scheme isEqualToString:@"file"])
+        return NO;
+    return YES;
+}
 
 - (void)FFmpegDecodeWithFilePath:(NSString *)path
 {
@@ -76,8 +89,14 @@ extern "C" {
 #pragma mark - 打开视频文件
 - (BOOL)openInputWithPath:(NSString *)path
 {
+    m_IsNetWork = isNetworkPath(path);
+    
     char *filePath = (char *)[path UTF8String];
     av_register_all();
+    if (m_IsNetWork)
+    {
+        avformat_network_init();
+    }
     
     if (avformat_open_input(&m_FormatCtx, filePath, NULL, NULL) != 0)
     {

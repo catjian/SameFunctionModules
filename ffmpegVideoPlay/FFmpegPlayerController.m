@@ -12,6 +12,7 @@
 #import "FFmpegPlayerView.h"
 #import "FFmpegPlayerAudioManager.h"
 #import <Foundation/NSObjCRuntime.h>
+//http://m9.play.vp.autohome.com.cn/flvs/B7823166A8F03C31/2017-02-06/A25A5EE927056AFE-100.mp4?key=2007AADDC7E922DCF213393C206602EC&time=1486458174
 
 @interface FFmpegPlayerController ()
 
@@ -41,7 +42,7 @@
 
 - (instancetype)init
 {
-    return [self initWithMoviePath:nil];
+    return [self initWithMoviePath:@"http://m9.play.vp.autohome.com.cn/flvs/B7823166A8F03C31/2017-02-06/A25A5EE927056AFE-100.mp4?key=2007AADDC7E922DCF213393C206602EC&time=1486458174"];
 }
 
 - (instancetype)initWithMoviePath:(NSString *)path
@@ -98,19 +99,29 @@
 }
 
 - (void)loadVideoWithPath:(NSString *)path
-{    
+{
     __weak typeof(self) weakSelf = self;
     m_Decoder = [[FFmpegPlayerDecoder alloc] init];
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *outputURL = paths[0];
-    NSFileManager *manager = [NSFileManager defaultManager];
-    [manager createDirectoryAtPath:outputURL withIntermediateDirectories:YES attributes:nil error:nil];
-    outputURL = [outputURL stringByAppendingPathComponent:@"1.mp4"];
     __block FFmpegPlayerDecoder *blockDecoder = m_Decoder;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)),
-                   dispatch_queue_create("com.FFmpegDecodeWithFilePath.thread", 0), ^{
-                       [blockDecoder FFmpegDecodeWithFilePath:outputURL];
-    });
+    if (path)
+    {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)),
+                       dispatch_queue_create("com.FFmpegDecodeWithFilePath.thread", 0), ^{
+                           [blockDecoder FFmpegDecodeWithFilePath:path];
+                       });
+    }
+    else
+    {
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+        NSString *outputURL = paths[0];
+        NSFileManager *manager = [NSFileManager defaultManager];
+        [manager createDirectoryAtPath:outputURL withIntermediateDirectories:YES attributes:nil error:nil];
+        outputURL = [outputURL stringByAppendingPathComponent:@"1.mp4"];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)),
+                       dispatch_queue_create("com.FFmpegDecodeWithFilePath.thread", 0), ^{
+                           [blockDecoder FFmpegDecodeWithFilePath:outputURL];
+        });
+    }
     [m_Decoder setGetVideoInfoBlock:^(BOOL isSuccess){
         [weakSelf performSelectorOnMainThread:@selector(setPlayConViewValues) withObject:nil waitUntilDone:NO];
     }];
