@@ -9,6 +9,7 @@
 #import "InsertImageToMovieViewController.h"
 #import <MobileCoreServices/MobileCoreServices.h>
 #import <AssetsLibrary/AssetsLibrary.h>
+#import "InsertImageIntoMovie.h"
 
 @interface InsertImageToMovieViewController () <UIImagePickerControllerDelegate, UINavigationControllerDelegate>
 
@@ -17,7 +18,8 @@
 @implementation InsertImageToMovieViewController
 {
     NSURL *m_FileUrl;
-    NSMutableArray *m_ImageArray;
+    UIImage *m_Image;
+    UIImageView *m_ImageView;
 }
 
 - (void)viewDidLoad
@@ -32,9 +34,13 @@
     [locVideo addTarget:self action:@selector(startLocation) forControlEvents:UIControlEventTouchUpInside];
     UIBarButtonItem *rightBarBtn = [[UIBarButtonItem alloc] initWithCustomView:locVideo];
     [self.navigationItem setRightBarButtonItem:rightBarBtn];
+    
+    m_ImageView = [[UIImageView alloc] initWithFrame:self.view.frame];
+    [self.view addSubview:m_ImageView];
 }
 
 #pragma mark - actions
+
 - (void)startLocation
 {
     ALAuthorizationStatus authState = [ALAssetsLibrary authorizationStatus];
@@ -62,7 +68,7 @@
         UIImagePickerController *imagePicker = [[UIImagePickerController alloc] init];
         [imagePicker setDelegate:self];
         [imagePicker setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
-        //        [imagePicker setMediaTypes:@[(NSString *)kUTTypeMovie, (NSString *)kUTTypeImage]];
+        [imagePicker setMediaTypes:@[(NSString *)kUTTypeMovie, (NSString *)kUTTypeImage]];
         [self presentViewController:imagePicker animated:YES completion:nil];
     }
 }
@@ -80,8 +86,14 @@
     }
     else
     {
-        UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
-        [m_ImageArray addObject:image];
+        m_Image = [info objectForKey:UIImagePickerControllerOriginalImage];
+        [self dismissViewControllerAnimated:YES completion:nil];
+        [m_ImageView setImage:m_Image];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [[InsertImageIntoMovie sharedInsertImageIntoMovie] insertIntoMovieWithUrl:m_FileUrl Image:m_Image ImageSize:CGSizeMake(100, 100) ImageAlpha:1 successBlock:^(NSURL *assetURL) {
+                
+            }];
+        });
     }
 }
 

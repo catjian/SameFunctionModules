@@ -8,9 +8,10 @@
 
 #import "RootViewController.h"
 
-#define DIF_RootTableViewDataSource @[@"镜头滤镜",@"本地视频滤镜", @"图片生成视频"]
+#define DIF_RootTableViewDataSource @[@"镜头滤镜",@"本地视频滤镜", @"图片生成视频",@"视频中插入图片",@"视频解码"]
 #define DIF_ViewControllerNames     @[@"FilterViewController", @"locationVideoViewController",\
-                                        @"CreateMovieWithImageArray"]
+                                        @"CreateMovieWithImageArray", @"InsertImageToMovieViewController",\
+                                        @"FFmpegPlayerController"]
 
 @interface RootViewController () <UITableViewDelegate, UITableViewDataSource>
 

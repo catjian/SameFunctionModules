@@ -8,6 +8,34 @@
 
 #import "AppDelegate.h"
 #import "RootViewController.h"
+#import "FFmpegPlayerController.h"
+
+@interface BaseNavigationController : UINavigationController
+
+@end
+
+@implementation BaseNavigationController
+
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
+{
+    return toInterfaceOrientation != UIDeviceOrientationPortraitUpsideDown;
+}
+
+- (BOOL)shouldAutorotate
+{
+    if ([NSStringFromClass(self.topViewController.class) isEqualToString:@"FFmpegPlayerController"])
+    { // 如果是这个 vc 则支持自动旋转
+        return YES;
+    }
+    return NO;
+}
+
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations
+{
+    return UIInterfaceOrientationMaskAllButUpsideDown;
+}
+
+@end
 
 @interface AppDelegate ()
 
@@ -23,7 +51,7 @@
     self.window.backgroundColor = [UIColor whiteColor];
     
     RootViewController *vc = [[RootViewController alloc] init];
-    [self.window setRootViewController:[[UINavigationController alloc] initWithRootViewController:vc]];
+    [self.window setRootViewController:[[BaseNavigationController alloc] initWithRootViewController:vc]];
     
     [self.window makeKeyAndVisible];
     return YES;
